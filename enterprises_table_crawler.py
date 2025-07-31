@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import csv
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 driver.get('https://finance.vietstock.vn/doanh-nghiep-a-z?page=1')
@@ -84,8 +85,8 @@ try:
     table = find_table(driver, table_by_css='#az-container > div.table-responsive.clear-fix.no-m-b > table')
     header_contents = find_table_header(table)
     row_contents = []
-    #loop to collect table content
-    for page in range(1, 4):
+    #loop to collect table content (change the number of page)
+    for page in range(1, 196):
         table = find_table(driver, table_by_css='#az-container > div.table-responsive.clear-fix.no-m-b > table')
         page_row_content = find_table_content(table)
         for row in page_row_content:
@@ -94,8 +95,16 @@ try:
         move_page()
 
 except Exception as e:
-    print("error somewhere", e)
+    print("error somewhere while trying to collecting data", e)
 
-print(row_contents)
 time.sleep(5)
 driver.quit()
+
+#todo: extract result into csv
+with open('vietstock_enterprises.csv', mode='w', newline='', encoding='utf-8-sig') as file:
+    writer = csv.writer(file)
+    # Ghi nội dung bảng
+    for row in row_contents:
+        writer.writerow(row)
+
+print("data stored at vietstock_enterprises.csv")
