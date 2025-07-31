@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -7,13 +8,26 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import csv
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-driver.get('https://finance.vietstock.vn/doanh-nghiep-a-z?page=1')
+#setup for chromeDriver
+def set_up_chromeDriver():
+    options = Options()
+
+    options.add_argument("--disable-notifications")
+    options.add_argument("--start-maximized")
+    options.add_argument("--disable-features=WebRtcHideLocalIpsWithMdns")
+    #options.add_argument("--headless")
+    options.add_experimental_option("prefs", {
+        "safebrowsing.enabled": True,
+        "profile.default_content_settings.popups": 0,
+        "plugins.always_open_pdf_externally": True
+    })
+    return options
 
 def fill_text_box(id, content):
     text_box = driver.find_element(By.ID, id)
     text_box.clear()
     text_box.send_keys(content)
+    time.sleep(1)
 
 def login(driver):
     #find login link
@@ -21,6 +35,7 @@ def login(driver):
         EC.element_to_be_clickable((By.LINK_TEXT, "Đăng nhập"))
     )
     login_link.click()
+    time.sleep(1)
 
     email_box_id = 'txtEmailLogin'
     password_box_id = 'passwordLogin'
@@ -34,14 +49,14 @@ def login(driver):
     )
 
     #enter the email and password
-    fill_text_box(email_box_id, 'dfghfgh7777@gmail.com')
-    fill_text_box(password_box_id, '15102004')
+    fill_text_box(id=email_box_id, content='dfghfgh7777@gmail.com')
+    fill_text_box(id=password_box_id, content='15102004')
 
     login_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.ID, 'btnLoginAccount'))
     )
     login_button.click()
-    time.sleep(10)
+    time.sleep(5)
 
 def find_table(driver, table_by_css):
     WebDriverWait(driver, 10).until(
@@ -74,11 +89,20 @@ def move_page():
     next_button = 'btn-next1'
     WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.NAME, next_button))
-            )               #cho nut chuyen trang co the click
+            )               #wait until next page button is ready to be click
     next_button = driver.find_element(By.NAME, next_button)
     next_button.click()
     time.sleep(5)
     print('went to the next page')
+
+
+try:
+    options = set_up_chromeDriver()
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver.get('https://finance.vietstock.vn/doanh-nghiep-a-z?page=1')
+
+except Exception as e:
+    print('cant access website')
 
 try:
     login(driver)
