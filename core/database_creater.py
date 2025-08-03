@@ -1,10 +1,14 @@
 from docx_table_reader import get_table_dataframe
 from docx_table_reader import get_document
+from docx_table_reader import extract_table_info
+from docx.oxml.table import CT_Tbl
+from docx.oxml.text.paragraph import CT_P
+from sentence_transformers import SentenceTransformer
 import os
 import re
 
 #checking text validation
-def gibbrish_detector(text):
+def gibbrish_detector(text) -> bool:
     #contain special character or number --> remove
     if re.fullmatch(r"[^\w\sÀ-Ỵà-ỵ]{3,}", text):
         return True
@@ -14,7 +18,7 @@ def gibbrish_detector(text):
         return True
     return False
 
-def is_valid_text(text):
+def is_valid_text(text) -> bool:
     if not text.strip():
         return False
     if len(text.strip()) < 5:
@@ -26,34 +30,66 @@ def is_valid_text(text):
     return False
 
 #find the header of table
-def get_table_header(document, table_index, max_lookback=10):
-    paras = document.paragraphs
+def get_table_header(document, table_index, max_lookback=5) -> str:
+    #find the indicated table
     table = document.tables[table_index]
     table_element = table._element
 
-    #find table XML position
+    #scan all element in the document
     body_elements = list(document.element.body.iterchildren())
+
+    #find the position of indicated table in XML tree
     table_position = None
     for i, el in enumerate(body_elements):
         if el == table_element:
             table_position = i
             break
 
+    #tray back to find the header of table
     if table_position is not None:
-        #tray back to find table header
-        count = 0
+        lookback = 0
         for i in range(table_position - 1, -1, -1):
-            if count > max_lookback:
+            #only tray back in a specific range
+            if lookback > max_lookback:
                 break
-            para_candidate = paras[i].text.strip()
-            if is_valid_text(para_candidate):
-                return para_candidate
-            count += 1
+            current_el = body_elements[i]
+            #in case of this element is a paragraph
+            if isinstance(current_el, CT_P):
+                para_candidate = current_el.text.strip()
+                #checking it text validation
+                if is_valid_text(para_candidate):
+                    #it might be the header of the table
+                    return para_candidate
+                lookback += 1
 
     return f"Table {table_index}"
-    
+
+#convert table to text for easier embedding
+def table_to_text(table_data, title="") -> str:
+    # table_data: List[List[str]]
+    flat_lines = [", ".join(row) for row in table_data]
+    table_text = f"{title}\n" + "\n".join(flat_lines)
+    return table_text
+
 
 #todo: create vector embedding for input file
+def create_embedding_vector():
+    model = SentenceTransformer('all-MiniLM-L6-v2')             #the model, change it if you want
+    embeddings = []
+    metadatas = []
+
+    for idx, table in enumerate(document.tables):
+        data = extract_table_info(tables=document.tables, table_index=idx)
+        title = get_table_header(document=document, table_index=idx, max_lookback=5)
+        text = table_to_text(table_data=data, title=title)
+
+        vector = model.encode(text)
+        embeddings.append(vector)
+        metadatas.append({
+            "table_index": idx,
+            "title": title,
+            "text": text
+        })
 
 
 #read input path
@@ -73,10 +109,11 @@ try:
 except Exception as e:
     print('cant read document')
 
-#find table header
+#embedding
 try:
-    table_header = get_table_header(document=document, table_index=3, max_lookback=5)
-    print(table_header)
+    create_embedding_vector()
+    print('embedding vector successful')
 
 except Exception as e:
-    print('cant find table header')
+    print('cant create embedding vector')
+    print(f'Error: {e}')
