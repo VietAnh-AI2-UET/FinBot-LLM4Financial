@@ -94,9 +94,9 @@ def create_embedding_vector(output_path):
         })
 
     #save vector embedding to JSON
-    save_output(base_dir, embeddings, metadatas)
+    save_output(output_path, embeddings, metadatas)
 
-def save_output(base_dir, embeddings, metadatas):
+def save_output(output_path, embeddings, metadatas):
     output = []
 
     for vec, metadata in zip(embeddings, metadatas):
@@ -105,7 +105,7 @@ def save_output(base_dir, embeddings, metadatas):
             'metadata': metadata
         })
 
-    embeddings_dir = os.path.abspath(os.path.join(base_dir, '..', 'embeddings'))
+    embeddings_dir = os.path.abspath(os.path.join(output_path, '..', 'embeddings'))
     os.makedirs(embeddings_dir, exist_ok=True)
 
     output_path = os.path.join(embeddings_dir, 'tables_embedding.json')
