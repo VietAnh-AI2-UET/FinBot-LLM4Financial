@@ -95,17 +95,8 @@ def create_embedding_vector(input_document, input_model='all-MiniLM-L6-v2') -> t
     return embeddings, metadatas
 
 #todo: create embedding vector database
-def get_file_path():
-    #read input path
-    try:
-        base_dir = os.path.dirname(__file__)
-        input_path = os.path.abspath(os.path.join(base_dir, '..', '000000014601738_VI_BaoCaoTaiChinh_KiemToan_2024_HopNhat_14032025110908.docx'))
-        print('file located')
-        return input_path
 
-    except Exception as e:
-        print('cant locate file')
-
+#call this function to create embedding vector database and metadatas
 def create_database(input_path):
     #read document
     input_path = input_path
