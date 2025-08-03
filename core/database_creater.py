@@ -6,6 +6,8 @@ from docx.oxml.text.paragraph import CT_P
 from sentence_transformers import SentenceTransformer
 import os
 import re
+import json
+import numpy as np
 
 #checking text validation
 def gibbrish_detector(text) -> bool:
@@ -73,7 +75,7 @@ def table_to_text(table_data, title="") -> str:
 
 
 #todo: create vector embedding for input file
-def create_embedding_vector():
+def create_embedding_vector(output_path):
     model = SentenceTransformer('all-MiniLM-L6-v2')             #the model, change it if you want
     embeddings = []
     metadatas = []
@@ -91,11 +93,32 @@ def create_embedding_vector():
             "text": text
         })
 
+    #save vector embedding to JSON
+    save_output(base_dir, embeddings, metadatas)
+
+def save_output(base_dir, embeddings, metadatas):
+    output = []
+
+    for vec, metadata in zip(embeddings, metadatas):
+        output.append({
+            'embedding': vec.tolist(),
+            'metadata': metadata
+        })
+
+    embeddings_dir = os.path.abspath(os.path.join(base_dir, '..', 'embeddings'))
+    os.makedirs(embeddings_dir, exist_ok=True)
+
+    output_path = os.path.join(embeddings_dir, 'tables_embedding.json')
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    print(f"Embeddings saved to: {output_path}")
 
 #read input path
 try:
     base_dir = os.path.dirname(__file__)
-    path = os.path.abspath(os.path.join(base_dir, '..', '000000014601738_VI_BaoCaoTaiChinh_KiemToan_2024_HopNhat_14032025110908.docx'))
+    input_path = os.path.abspath(os.path.join(base_dir, '..', '000000014601738_VI_BaoCaoTaiChinh_KiemToan_2024_HopNhat_14032025110908.docx'))
     print('file located')
 
 except Exception as e:
@@ -103,7 +126,7 @@ except Exception as e:
 
 #read document
 try:
-    document = get_document(path=path)
+    document = get_document(path=input_path)
     print('document reading successful')
 
 except Exception as e:
@@ -111,9 +134,9 @@ except Exception as e:
 
 #embedding
 try:
-    create_embedding_vector()
+    create_embedding_vector(output_path=base_dir)
     print('embedding vector successful')
 
 except Exception as e:
-    print('cant create embedding vector')
+    print('cant create embedding vector or cant save output file')
     print(f'Error: {e}')
