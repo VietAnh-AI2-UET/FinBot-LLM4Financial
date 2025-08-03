@@ -1,12 +1,10 @@
-from docx_table_reader import get_table_dataframe
 from docx_table_reader import get_document
 from docx_table_reader import extract_table_info
-from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from sentence_transformers import SentenceTransformer
 import os
 import re
-import json
+import faiss
 import numpy as np
 
 #checking text validation
@@ -74,15 +72,16 @@ def table_to_text(table_data, title="") -> str:
     return table_text
 
 
-#todo: create vector embedding for input file
-def create_embedding_vector(output_path):
-    model = SentenceTransformer('all-MiniLM-L6-v2')             #the model, change it if you want
+#create vector embedding for input file
+def create_embedding_vector(input_document, input_model='all-MiniLM-L6-v2') -> tuple:
+    model = SentenceTransformer(input_model)             #the model, change it if you want
     embeddings = []
     metadatas = []
 
-    for idx, table in enumerate(document.tables):
-        data = extract_table_info(tables=document.tables, table_index=idx)
-        title = get_table_header(document=document, table_index=idx, max_lookback=5)
+    #for docx file
+    for idx, table in enumerate(input_document.tables):
+        data = extract_table_info(tables=input_document.tables, table_index=idx)
+        title = get_table_header(document=input_document, table_index=idx, max_lookback=5)
         text = table_to_text(table_data=data, title=title)
 
         vector = model.encode(text)
@@ -93,50 +92,52 @@ def create_embedding_vector(output_path):
             "text": text
         })
 
-    #save vector embedding to JSON
-    save_output(output_path, embeddings, metadatas)
+    return embeddings, metadatas
 
-def save_output(output_path, embeddings, metadatas):
-    output = []
+#todo: create embedding vector database
+def get_file_path():
+    #read input path
+    try:
+        base_dir = os.path.dirname(__file__)
+        input_path = os.path.abspath(os.path.join(base_dir, '..', '000000014601738_VI_BaoCaoTaiChinh_KiemToan_2024_HopNhat_14032025110908.docx'))
+        print('file located')
+        return input_path
 
-    for vec, metadata in zip(embeddings, metadatas):
-        output.append({
-            'embedding': vec.tolist(),
-            'metadata': metadata
-        })
+    except Exception as e:
+        print('cant locate file')
 
-    embeddings_dir = os.path.abspath(os.path.join(output_path, '..', 'embeddings'))
-    os.makedirs(embeddings_dir, exist_ok=True)
+def create_database(input_path):
+    #read document
+    input_path = input_path
+    try:
+        document = get_document(path=input_path)
+        print('document reading successful')
 
-    output_path = os.path.join(embeddings_dir, 'tables_embedding.json')
+    except Exception as e:
+        print('cant read document')
 
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+    #embedding
+    try:
+        input_model = 'all-MiniLM-L6-v2'
+        embeddings, metadatas = create_embedding_vector(input_document=document, input_model=input_model)
+        print('embedding vector successful')
 
-    print(f"Embeddings saved to: {output_path}")
+    except Exception as e:
+        print('cant create embedding vector')
+        print(f'Error: {e}')
 
-#read input path
-try:
-    base_dir = os.path.dirname(__file__)
-    input_path = os.path.abspath(os.path.join(base_dir, '..', '000000014601738_VI_BaoCaoTaiChinh_KiemToan_2024_HopNhat_14032025110908.docx'))
-    print('file located')
+    try:
+        # Convert to numpy
+        embedding_matrix = np.stack(embeddings).astype("float32")
+        faiss.normalize_L2(embedding_matrix)
 
-except Exception as e:
-    print('cant locate file')
+        # FAISS index
+        dimension = embedding_matrix.shape[1]
+        index = faiss.IndexFlatIP(dimension)
+        index.add(embedding_matrix)
+        print('database created')
+        return index, metadatas
 
-#read document
-try:
-    document = get_document(path=input_path)
-    print('document reading successful')
-
-except Exception as e:
-    print('cant read document')
-
-#embedding
-try:
-    create_embedding_vector(output_path=base_dir)
-    print('embedding vector successful')
-
-except Exception as e:
-    print('cant create embedding vector or cant save output file')
-    print(f'Error: {e}')
+    except Exception as e:
+        print('cant create database')
+        print(f'Error: {e}')
