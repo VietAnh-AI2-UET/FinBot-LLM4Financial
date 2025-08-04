@@ -1,8 +1,8 @@
 from receiver import find_information
 
 #get user question and similar information -> create a prompt for LLM
-def get_prompt(input_model='all-MiniLM-L6-v2', k=5):
-    user_question, similar_info = find_information(input_model=input_model, k=k)
+def get_user_prompt(input_model='all-MiniLM-L6-v2', num_sim_docx=5) ->str:
+    user_question, similar_info = find_information(input_model=input_model, k=num_sim_docx)
     #get title and text in similar_info
     metadatas = []
     for el in similar_info:
@@ -11,12 +11,26 @@ def get_prompt(input_model='all-MiniLM-L6-v2', k=5):
             'text': el['text']
         }
         metadatas.append(metadata)
-    prompt = 'Từ các thông tin sau:\n'
+    user_prompt = 'Từ các thông tin sau:\n'
     for el in metadatas:
-        prompt += f"Tiêu đề: {el['title']}\nNội dung: {el['text']}\n"
-    prompt += 'Hãy trả lời câu hỏi:\n'
-    prompt += user_question
+        user_prompt += f"Tiêu đề: {el['title']}\nNội dung: {el['text']}\n"
+    user_prompt += 'Hãy trả lời câu hỏi:\n'
+    user_prompt += user_question
 
-    return prompt
+    return user_prompt
 
 #todo: call a LLM API then return output
+def call_llm_api(embedding_model='all-MiniLM-L6-v2', num_sim_docx=5, LLM_model="gpt-3.5-turbo", api_key="what do you expected? call your own API"):
+    openai.api_key = api_key
+    user_prompt = get_user_prompt(input_model=embedding_model, num_sim_docx=num_sim_docx)
+    sys_prompt = "Bạn là một trợ lý AI có khả năng truy xuất thông tin trong tài liệu mà người dùng cung cấp. Từ những thông tin đó, bạn trả lời câu hỏi mà người dùng đưa ra"
+    response = openai.ChatCompletion.create(
+        model=LLM_model,
+        messages=[
+            {"role": "system", "content": sys_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        max_tokens=512,
+        temperature=0.7
+    )
+    return response.choices[0].message['content']
