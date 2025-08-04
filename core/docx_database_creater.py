@@ -97,7 +97,7 @@ def create_embedding_vector(input_document, input_model='all-MiniLM-L6-v2') -> t
 #todo: create embedding vector database
 
 #call this function to create embedding vector database and metadatas
-def create_database(input_path):
+def create_database(input_path, input_model='all-MiniLM-L6-v2'):
     #read document
     input_path = input_path
     try:
@@ -109,7 +109,7 @@ def create_database(input_path):
 
     #embedding
     try:
-        input_model = 'all-MiniLM-L6-v2'
+        input_model = input_model
         embeddings, metadatas = create_embedding_vector(input_document=document, input_model=input_model)
         print('embedding vector successful')
 
