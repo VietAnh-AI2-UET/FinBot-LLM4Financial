@@ -43,10 +43,6 @@ from huggingface_hub import InferenceClient
 def respond_user(user_question,temp_path):
     user_prompt = get_user_prompt(input_model='all-MiniLM-L6-v2', num_sim_docx=5, user_question=user_question,temp_path=temp_path)
 
-    # client = InferenceClient (
-    #     provider="nebius",
-    #     api_key= os.getenv("HF_TOKEN"),
-    # )
 
     # completion = client.chat.completions.create(
     #     model="deepseek-ai/DeepSeek-R1-0528",
