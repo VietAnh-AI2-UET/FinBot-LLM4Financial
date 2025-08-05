@@ -1,7 +1,6 @@
 from core.receiver import find_information
-from langchain.llms.base import LLM
 from typing import Optional, List
-from openai import OpenAI
+
 #get user question and similar information -> create a prompt for LLM
 def get_user_prompt(input_model='all-MiniLM-L6-v2', num_sim_docx=5, user_question = '',temp_path = None) ->str:
     user_question, similar_info = find_information(input_model=input_model, k=num_sim_docx,user_question=user_question,temp_path=temp_path)
@@ -58,22 +57,6 @@ def respond_user(user_question,temp_path):
     #         }
     #     ],
     # )
-    model= "phogpt-4b-chat"
-    base_url="http://localhost:1234/v1"
-    api_key = ""  # bất kỳ chuỗi nào
-    temperature = 0.7
-
-
-    client = OpenAI(base_url=base_url, api_key=api_key)
-    response = client.chat.completions.create(
-        model= model,
-        messages=[
-            {"role": "system", "content": "Bạn là một chuyên gia tài chính."},
-            {"role": "user", "content": user_prompt}
-        ],
-        temperature=temperature
-    )
+    
     print(user_prompt)
-    return response.choices[0].message.content
-    # print(user_prompt)
     # return (completion.choices[0].message.content)

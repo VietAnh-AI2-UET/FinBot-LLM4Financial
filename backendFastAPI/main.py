@@ -3,8 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from typing import Optional
-from data_process.extract_table import extract_table
-from model_LLM.rag import response_user
 from core.output_generator import respond_user
 import tempfile
 import shutil
