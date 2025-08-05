@@ -45,7 +45,7 @@ def respond_user(user_question,temp_path):
 
     # client = InferenceClient (
     #     provider="nebius",
-    #     api_key="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",
+    #     api_key="",
     # )
 
     # completion = client.chat.completions.create(
@@ -64,7 +64,7 @@ def respond_user(user_question,temp_path):
     # )
     model= "phogpt-4b-chat"
     base_url="http://localhost:1234/v1"
-    api_key = "lm-studio"  # bất kỳ chuỗi nào
+    api_key = ""  # bất kỳ chuỗi nào
     temperature = 0.7
 
 

@@ -30,7 +30,7 @@ class HuggingFaceLLM(LLM, BaseModel):
         
         client = InferenceClient(
             provider="novita",
-            api_key="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",
+            api_key="",
         )
         response = client.chat.completions.create(
             model=self.model,
@@ -47,7 +47,7 @@ from openai import OpenAI
 class LMStudioLLM(LLM):
     model: str = "phogpt-4b-chat"
     base_url: str = "http://localhost:1234/v1"
-    api_key: str = "lm-studio"  # bất kỳ chuỗi nào
+    api_key: str = ""  # bất kỳ chuỗi nào
     temperature: float = 0.7
 
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
