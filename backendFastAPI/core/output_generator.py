@@ -45,7 +45,7 @@ def respond_user(user_question,temp_path):
 
     # client = InferenceClient (
     #     provider="nebius",
-    #   thêm api vào
+   
     # )
 
     # completion = client.chat.completions.create(
