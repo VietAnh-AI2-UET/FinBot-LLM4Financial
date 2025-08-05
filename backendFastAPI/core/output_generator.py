@@ -45,7 +45,7 @@ def respond_user(user_question,temp_path):
 
     # client = InferenceClient (
     #     provider="nebius",
-   
+    #     api_key= os.getenv("HF_TOKEN"),
     # )
 
     # completion = client.chat.completions.create(
