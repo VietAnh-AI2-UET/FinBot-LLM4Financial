@@ -30,7 +30,7 @@ class HuggingFaceLLM(LLM, BaseModel):
         
         client = InferenceClient(
             provider="novita",
-            api_key="",
+            api_key=None,
         )
         response = client.chat.completions.create(
             model=self.model,
@@ -66,7 +66,7 @@ class LMStudioLLM(LLM):
     def _llm_type(self) -> str:
         return "lm-studio"
     
-# llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", api_token='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')
+# llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", api_token=None)
 # llm = LMStudioLLM() 
 # Load LLM
 
@@ -109,7 +109,7 @@ def read_vectors_db():
 # Bat dau thu nghiem
 def response_user(question):
     db = read_vectors_db()
-    llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", api_token='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')
+    llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", api_token=None)
     #Tao Prompt
     prompt = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template("Bạn là một chuyên gia tài chính."),
