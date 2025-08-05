@@ -19,18 +19,40 @@ def get_user_prompt(input_model='all-MiniLM-L6-v2', num_sim_docx=5) ->str:
 
     return user_prompt
 
-#todo: call a LLM API then return output
-def call_llm_api(embedding_model='all-MiniLM-L6-v2', num_sim_docx=5, LLM_model="gpt-3.5-turbo", api_key="what do you expected? call your own API"):
-    openai.api_key = api_key
-    user_prompt = get_user_prompt(input_model=embedding_model, num_sim_docx=num_sim_docx)
-    sys_prompt = "Bạn là một trợ lý AI có khả năng truy xuất thông tin trong tài liệu mà người dùng cung cấp. Từ những thông tin đó, bạn trả lời câu hỏi mà người dùng đưa ra"
-    response = openai.ChatCompletion.create(
-        model=LLM_model,
-        messages=[
-            {"role": "system", "content": sys_prompt},
-            {"role": "user", "content": user_prompt}
-        ],
-        max_tokens=512,
-        temperature=0.7
-    )
-    return response.choices[0].message['content']
+# #todo: call a LLM API then return output
+# def call_llm_api(embedding_model='all-MiniLM-L6-v2', num_sim_docx=5, LLM_model="gpt-3.5-turbo", api_key="what do you expected? call your own API"):
+#     openai.api_key = api_key
+#     user_prompt = get_user_prompt(input_model=embedding_model, num_sim_docx=num_sim_docx)
+#     sys_prompt = "Bạn là một trợ lý AI có khả năng truy xuất thông tin trong tài liệu mà người dùng cung cấp. Từ những thông tin đó, bạn trả lời câu hỏi mà người dùng đưa ra"
+#     response = openai.ChatCompletion.create(
+#         model=LLM_model,
+#         messages=[
+#             {"role": "system", "content": sys_prompt},
+#             {"role": "user", "content": user_prompt}
+#         ],
+#         max_tokens=512,
+#         temperature=0.7
+#     )
+#     return response.choices[0].message['content']
+
+import os
+from huggingface_hub import InferenceClient
+
+user_prompt = get_user_prompt(input_model='all-MiniLM-L6-v2', num_sim_docx=5)
+
+completion = client.chat.completions.create(
+    model="deepseek-ai/DeepSeek-R1-0528",
+    messages=[
+        {
+            'role': "system",
+            'content': 'Bạn là một trợ lý AI có khả năng truy xuất thông tin trong tài liệu mà người dùng cung cấp. Từ những thông tin đó, bạn trả lời câu hỏi mà người dùng đưa ra'
+        },
+
+        {
+            "role": "user",
+            "content": user_prompt
+        }
+    ],
+)
+# print(user_prompt)
+print(completion.choices[0].message)
