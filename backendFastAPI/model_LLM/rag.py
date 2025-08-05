@@ -30,7 +30,7 @@ class HuggingFaceLLM(LLM, BaseModel):
         
         client = InferenceClient(
             provider="novita",
-            api_key=None,
+            #them api,
         )
         response = client.chat.completions.create(
             model=self.model,
@@ -47,7 +47,7 @@ from openai import OpenAI
 class LMStudioLLM(LLM):
     model: str = "phogpt-4b-chat"
     base_url: str = "http://localhost:1234/v1"
-    api_key: str = ""  # bất kỳ chuỗi nào
+  # bất kỳ chuỗi nào api
     temperature: float = 0.7
 
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
@@ -66,7 +66,7 @@ class LMStudioLLM(LLM):
     def _llm_type(self) -> str:
         return "lm-studio"
     
-# llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", api_token=None)
+# llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1")
 # llm = LMStudioLLM() 
 # Load LLM
 
@@ -109,7 +109,7 @@ def read_vectors_db():
 # Bat dau thu nghiem
 def response_user(question):
     db = read_vectors_db()
-    llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", api_token=None)
+    llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", them api vào)
     #Tao Prompt
     prompt = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template("Bạn là một chuyên gia tài chính."),
