@@ -6,7 +6,7 @@ import os
 import re
 import faiss
 import numpy as np
-
+import json
 #checking text validation
 def gibbrish_detector(text) -> bool:
     #contain special character or number --> remove
@@ -73,15 +73,25 @@ def table_to_text(table_data, title="") -> str:
 
 
 #create vector embedding for input file
-def create_embedding_vector(input_document, input_model='all-MiniLM-L6-v2') -> tuple:
+def create_embedding_vector(input_document,path_doc, input_model='all-MiniLM-L6-v2') -> tuple:
     model = SentenceTransformer(input_model)             #the model, change it if you want
     embeddings = []
     metadatas = []
-
+    name_file =  os.path.splitext(os.path.basename(path_doc))[0]
+    output_json_path = f'../database/{name_file}.json'
+    print(output_json_path)
+    if os.path.exists(output_json_path):
+        print(f"Đã tìm thấy file embedding: {output_json_path}, đang load lại...")
+        with open(output_json_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        embeddings = [np.array(item["embedding"]) for item in data]
+        metadatas = [item["metadata"] for item in data]
+        return embeddings, metadatas
+    print("đag tạo mới db")
     #for docx file
     for idx, table in enumerate(input_document.tables):
         data = extract_table_info(tables=input_document.tables, table_index=idx)
-        title = get_table_header(document=input_document, table_index=idx, max_lookback=5)
+        title = get_table_header(document=input_document, table_index=idx, max_lookback=10)
         text = table_to_text(table_data=data, title=title)
 
         vector = model.encode(text)
@@ -91,11 +101,32 @@ def create_embedding_vector(input_document, input_model='all-MiniLM-L6-v2') -> t
             "title": title,
             "text": text
         })
-
+    save_data = [
+        {
+            "embedding": emb.tolist(),
+            "metadata": meta
+        }
+        for emb, meta in zip(embeddings, metadatas)
+    ]
+    print("đang viết")
+    os.makedirs(os.path.dirname(output_json_path), exist_ok=True)
+    with open(output_json_path, "w", encoding="utf-8") as f:
+        json.dump(save_data, f, indent=2, ensure_ascii=False)
+    print("viết xong")
     return embeddings, metadatas
 
-#todo: create embedding vector database
+def load_embedding_vector_from_json(input_path) -> tuple:
+    with open(input_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
 
+    embeddings = [np.array(item["embedding"]) for item in data]
+    metadatas = [item["metadata"] for item in data]
+
+    return embeddings, metadatas
+#todo: create embedding vector database
+# path = '../../000000014601738_VI_BaoCaoTaiChinh_KiemToan_2024_HopNhat_14032025110908.docx'
+# doc = get_document(path)
+# create_embedding_vector(doc,path)
 #call this function to create embedding vector database and metadatas
 def create_database(input_path, input_model='all-MiniLM-L6-v2'):
     #read document
@@ -108,14 +139,11 @@ def create_database(input_path, input_model='all-MiniLM-L6-v2'):
         print('cant read document')
 
     #embedding
-    try:
-        input_model = input_model
-        embeddings, metadatas = create_embedding_vector(input_document=document, input_model=input_model)
-        print('embedding vector successful')
+ 
+    input_model = input_model
+    embeddings, metadatas = create_embedding_vector(input_document=document,path_doc=input_path, input_model=input_model)
+    print('embedding vector successful')
 
-    except Exception as e:
-        print('cant create embedding vector')
-        print(f'Error: {e}')
 
     try:
         # Convert to numpy

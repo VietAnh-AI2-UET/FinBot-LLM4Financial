@@ -8,7 +8,7 @@ import tempfile
 import shutil
 
 app = FastAPI()
-
+saved_file_path = None
 # Cho phép frontend truy cập
 app.add_middleware(
     CORSMiddleware,
@@ -23,18 +23,28 @@ class Message(BaseModel):
 
 @app.post("/chat")
 async def chat(message: str = Form(...), file: Optional[UploadFile] = File(None)):
+    global saved_file_path
     print(f"Message: {message}")
+    # if message:
+    if file:
+        print(f"Received file: {file.filename}")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            shutil.copyfileobj(file.file, tmp)
+            saved_file_path = tmp.name
+            # tmp_path = tmp.name
+            # extract_table(tmp_path)
+            # res = response_user(message)
+            # res = respond_user(user_question=message,temp_path=tmp_path)
+        # return {"response": res}
+    if not saved_file_path:
+        return {"response": "Bạn chưa upload file tài liệu nào."}
+    
     if message:
-        if file:
-            print(f"Received file: {file.filename}")
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-                shutil.copyfileobj(file.file, tmp)
-                tmp_path = tmp.name
-                # extract_table(tmp_path)
-                # res = response_user(message)
-                res = respond_user(user_question=message,temp_path=tmp_path)
-            return {"response": res}
+        if saved_file_path is None:
+            print("NNNNNN")
+        res = respond_user(user_question=message, temp_path=saved_file_path)
+        return {"response": res}
     else:
-        return {"response": f" Bạn chưa có câu hỏi."}
+        return {"response": "❗Bạn chưa nhập câu hỏi."}
 
-    return {"response": f" {message}"}
+    # return {"response": f" {message}"}

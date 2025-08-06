@@ -42,21 +42,25 @@ from huggingface_hub import InferenceClient
 def respond_user(user_question,temp_path):
     user_prompt = get_user_prompt(input_model='all-MiniLM-L6-v2', num_sim_docx=5, user_question=user_question,temp_path=temp_path)
 
+    client = InferenceClient (
+        provider="nebius",
+        # them api key để chạy
+    )
 
-    # completion = client.chat.completions.create(
-    #     model="deepseek-ai/DeepSeek-R1-0528",
-    #     messages=[
-    #         {
-    #             'role': "system",
-    #             'content': 'Bạn là một trợ lý AI có khả năng truy xuất thông tin trong tài liệu mà người dùng cung cấp. Từ những thông tin đó, bạn trả lời câu hỏi mà người dùng đưa ra'
-    #         },
+    completion = client.chat.completions.create(
+        model="deepseek-ai/DeepSeek-R1-0528",
+        messages=[
+            {
+                'role': "system",
+                'content': 'Bạn là một trợ lý AI có khả năng truy xuất thông tin trong tài liệu mà người dùng cung cấp. Từ những thông tin đó, bạn trả lời câu hỏi mà người dùng đưa ra nếu câu hỏi không có trong tài liệu hãy nói thẳng '
+            },
 
-    #         {
-    #             "role": "user",
-    #             "content": user_prompt
-    #         }
-    #     ],
-    # )
+            {
+                "role": "user",
+                "content": user_prompt
+            }
+        ],
+    )
     
-    print(user_prompt)
-    # return (completion.choices[0].message.content)
+    # print(user_prompt)
+    return (completion.choices[0].message.content)
