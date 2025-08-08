@@ -1,4 +1,5 @@
 from core.docx_database_creater import create_database
+from core.csv_database_creater import create_database_for_csv
 from sentence_transformers import SentenceTransformer
 import os
 
@@ -19,13 +20,28 @@ def get_database(input_model='all-MiniLM-L6-v2',temp_path=None) -> tuple:
         input_path = get_input_path()
     input_path = temp_path
     
-    try:
-        index, metadatas = create_database(input_path=input_path, input_model=input_model)
-        return index, metadatas
+    #checking file type
+    file_ext = os.path.splitext(input_path)[-1].lower()
 
-    except Exception as e:
-        print('cant get database')
-        print(f'error: {e}')
+    #get vector embedding for csv
+    if file_ext == '.csv':
+        try:
+            index, metadatas = create_database_for_csv(input_path=input_path, embedding_model=input_model)
+            return index, metadatas
+
+        except Exception as e:
+            print('cant get database for csv file')
+            print(f'error: {e}')
+
+    #get vector embedding for docx
+    else:
+        try:
+            index, metadatas = create_database(input_path=input_path, input_model=input_model)
+            return index, metadatas
+
+        except Exception as e:
+            print('cant get database for docx file')
+            print(f'error: {e}')
 
 #get user prompt
 def get_user_question() -> str:
