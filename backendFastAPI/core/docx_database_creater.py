@@ -7,6 +7,7 @@ import re
 import faiss
 import numpy as np
 import json
+
 #checking text validation
 def gibbrish_detector(text) -> bool:
     #contain special character or number --> remove
@@ -123,10 +124,7 @@ def load_embedding_vector_from_json(input_path) -> tuple:
     metadatas = [item["metadata"] for item in data]
 
     return embeddings, metadatas
-#todo: create embedding vector database
-# path = '../../000000014601738_VI_BaoCaoTaiChinh_KiemToan_2024_HopNhat_14032025110908.docx'
-# doc = get_document(path)
-# create_embedding_vector(doc,path)
+
 #call this function to create embedding vector database and metadatas
 def create_database(input_path, input_model='all-MiniLM-L6-v2'):
     #read document
