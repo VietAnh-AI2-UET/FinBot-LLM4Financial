@@ -4,7 +4,7 @@ import os
 import fitz
 from PIL import Image
 from data_process.processing_md import preprocessing_md
-path_server = 'https://a6a312a705ab.ngrok-free.app'
+path_server = '' 
 url_ocr = f"{path_server}/ocr"
 url_status = f"{path_server}/status"
 

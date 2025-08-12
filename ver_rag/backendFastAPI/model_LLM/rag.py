@@ -16,7 +16,7 @@ from huggingface_hub import InferenceClient
 from langchain.llms.base import LLM
 from typing import Optional, List
 from openai import OpenAI
-
+GG_API = ''
 class HuggingFaceLLM(LLM, BaseModel):
     model: str
     api_token: str
@@ -97,8 +97,8 @@ def create_qa_chain(prompt, llm, db):
     return llm_chain
 
 # Read tu VectorDB
-os.environ["GOOGLE_API_KEY"] = "AIzaSyDcqBdI_J_VPpY828RlFiB90fpG2kS-PQU"
-os.environ["GEMINI_API_KEY"] = "AIzaSyDcqBdI_J_VPpY828RlFiB90fpG2kS-PQU"
+os.environ["GOOGLE_API_KEY"] = GG_API
+os.environ["GEMINI_API_KEY"] = GG_API
 
 # Bat dau thu nghiem
 def response_user(question):
