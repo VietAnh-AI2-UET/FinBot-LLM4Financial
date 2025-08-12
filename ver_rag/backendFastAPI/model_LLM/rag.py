@@ -30,7 +30,7 @@ class HuggingFaceLLM(LLM, BaseModel):
         
         client = InferenceClient(
             provider="novita",
-            api_key="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"
+            api_key=""
         )
         response = client.chat.completions.create(
             model=self.model,
