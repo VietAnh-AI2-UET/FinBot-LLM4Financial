@@ -9,8 +9,9 @@ function App() {
   ]);
   const [input, setInput] = useState('');
   const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false); // trạng thái đang xử lý
+  const [loading, setLoading] = useState(false);
   const [botTypingText, setBotTypingText] = useState('');
+  const [isPdfProcessing, setIsPdfProcessing] = useState(false); // trạng thái OCR PDF
 
   const handleSend = async () => {
     if (input.trim() === '' && !file) return;
@@ -19,9 +20,14 @@ function App() {
     if (input.trim() !== '') {
       newMessages.push({ role: 'user', text: input });
     }
-
     setMessages(newMessages);
-    setLoading(true); // ✅ Bắt đầu loading
+    setLoading(true);
+
+    if (file && file.name.toLowerCase().endsWith('.pdf')) {
+      setIsPdfProcessing(true); // Bật trạng thái OCR PDF
+    } else {
+      setIsPdfProcessing(false);
+    }
 
     const formData = new FormData();
     formData.append("message", input);
@@ -42,13 +48,14 @@ function App() {
       const data = res.data;
       simulateTyping(data.response, () => {
         setMessages(prev => [...prev, { role: 'bot', text: data.response }]);
-        setBotTypingText(''); // xóa sau khi đã thêm vào messages
+        setBotTypingText('');
       });
     } catch (error) {
       setMessages(prev => [...prev, { role: 'bot', text: '❌ Lỗi kết nối server' }]);
       console.error('Error:', error);
     } finally {
-      setLoading(false); // ✅ Kết thúc loading
+      setLoading(false);
+      setIsPdfProcessing(false); // Tắt trạng thái OCR PDF
     }
   };
 
@@ -56,10 +63,10 @@ function App() {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    const allowedExtensions = ['doc', 'docx'];
+    const allowedExtensions = ['doc', 'docx', 'pdf'];
     const extension = selected.name.split('.').pop().toLowerCase();
     if (!allowedExtensions.includes(extension)) {
-      alert('❌ Chỉ chấp nhận file .doc hoặc .docx');
+      alert('❌ Chỉ chấp nhận file .doc, .docx hoặc .pdf');
       return;
     }
 
@@ -67,42 +74,46 @@ function App() {
   };
 
   const simulateTyping = (fullText, callback) => {
-  let index = 0;
-  setBotTypingText('');
-  const interval = setInterval(() => {
-    if (index < fullText.length) {
-      setBotTypingText(prev => prev + fullText[index]);
-      index++;
-    } else {
-      clearInterval(interval);
-      callback();
-    }
-  }, 2); // 30ms mỗi ký tự
-};
-
+    let index = 0;
+    setBotTypingText('');
+    const interval = setInterval(() => {
+      if (index < fullText.length) {
+        setBotTypingText(prev => prev + fullText[index]);
+        index++;
+      } else {
+        clearInterval(interval);
+        callback();
+      }
+    }, 3); // 30ms mỗi ký tự
+  };
 
   return (
     <div className="app">
       <h1>🧠 LLM Chatbot</h1>
       <div className="chat-box">
         {messages.map((msg, idx) => (
-        <div key={idx} className={`msg ${msg.role}`}>
-          <strong>{msg.role === 'user' ? 'Bạn' : 'Bot'}:</strong>
-          <ReactMarkdown>{msg.text}</ReactMarkdown>
-        </div>
-      ))}
-      {botTypingText && (
-        <div className="msg bot">
-          <strong>Bot:</strong> <ReactMarkdown>{botTypingText}</ReactMarkdown>
-        </div>
-      )}
+          <div key={idx} className={`msg ${msg.role}`}>
+            <strong>{msg.role === 'user' ? 'Bạn' : 'Bot'}:</strong>
+            <ReactMarkdown>{msg.text}</ReactMarkdown>
+          </div>
+        ))}
+
+        {botTypingText && (
+          <div className="msg bot">
+            <strong>Bot:</strong> <ReactMarkdown>{botTypingText}</ReactMarkdown>
+          </div>
+        )}
 
         {loading && (
           <div className="msg bot">
-            <strong>Bot:</strong> ⏳ Đang xử lý, vui lòng chờ...
+            <strong>Bot:</strong>{' '}
+            {isPdfProcessing
+              ? '⏳ Quá trình OCR có thể mất nhiều thời gian...'
+              : '⏳ Đang xử lý, vui lòng chờ...'}
           </div>
         )}
       </div>
+
       <div className="input-area">
         <input
           type="text"
@@ -113,7 +124,7 @@ function App() {
         />
         <input
           type="file"
-          accept=".doc,.docx"
+          accept=".doc,.docx,.pdf"
           onChange={handleFileChange}
           style={{ marginLeft: '10px' }}
         />

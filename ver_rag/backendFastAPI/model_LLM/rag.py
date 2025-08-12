@@ -5,17 +5,17 @@ from langchain_community.embeddings import GPT4AllEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_chroma import Chroma
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate
-# Cau hinh
+from langchain_google_genai import ChatGoogleGenerativeAI
 import os
-
+from google import genai
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-vector_db_path = os.path.join(CURRENT_DIR, "..", "vectorstores", "db_faiss")
-model_file = "model/vinallama-2.7b-chat-Q5_0.gguf"
-# vector_db_path = "../vectorstores/db_faiss"
 from langchain.llms.base import LLM
 from typing import Optional, List
 from pydantic import BaseModel
 from huggingface_hub import InferenceClient
+from langchain.llms.base import LLM
+from typing import Optional, List
+from openai import OpenAI
 
 class HuggingFaceLLM(LLM, BaseModel):
     model: str
@@ -30,7 +30,7 @@ class HuggingFaceLLM(LLM, BaseModel):
         
         client = InferenceClient(
             provider="novita",
-            api_key=""
+            api_key="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"
         )
         response = client.chat.completions.create(
             model=self.model,
@@ -40,9 +40,7 @@ class HuggingFaceLLM(LLM, BaseModel):
             temperature=self.temperature,
         )
         return response.choices[0].message.content
-from langchain.llms.base import LLM
-from typing import Optional, List
-from openai import OpenAI
+
 
 class LMStudioLLM(LLM):
     model: str = "phogpt-4b-chat"
@@ -65,11 +63,11 @@ class LMStudioLLM(LLM):
     @property
     def _llm_type(self) -> str:
         return "lm-studio"
+
     
 # llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1")
 # llm = LMStudioLLM() 
 # Load LLM
-
 
 def load_llm(model_file):
     llm = CTransformers(
@@ -99,34 +97,33 @@ def create_qa_chain(prompt, llm, db):
     return llm_chain
 
 # Read tu VectorDB
-def read_vectors_db():
-    # Embeding
-    embedding_model = GPT4AllEmbeddings(model_file="model\\all-MiniLM-L6-v2-f16.gguf")
-    db = FAISS.load_local(vector_db_path, embedding_model, allow_dangerous_deserialization=True)
-    return db
-
+os.environ["GOOGLE_API_KEY"] = "AIzaSyDcqBdI_J_VPpY828RlFiB90fpG2kS-PQU"
+os.environ["GEMINI_API_KEY"] = "AIzaSyDcqBdI_J_VPpY828RlFiB90fpG2kS-PQU"
 
 # Bat dau thu nghiem
 def response_user(question):
     embedding_model = GPT4AllEmbeddings(model_file="model\\all-MiniLM-L6-v2-f16.gguf")
     db = Chroma(persist_directory="./vector_store", embedding_function=embedding_model)
-    llm = HuggingFaceLLM(model="deepseek-ai/DeepSeek-R1", api_token="")
-    #Tao Prompt
+    llm = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",  # hoặc gemini-1.5-pro nếu bạn được cấp
+    temperature=0.3,
+    max_output_tokens=1024
+    )
     prompt = ChatPromptTemplate.from_messages([
         SystemMessagePromptTemplate.from_template("Bạn là một chuyên gia tài chính."),
         HumanMessagePromptTemplate.from_template("""
     {context}
 
     Câu hỏi: {question}
+    
+    Hãy dựa trên những thông tin có trong dữ liệu được cung cấp tìm những thông tin số liệu liên quan đến câu hỏi nhất và đưa ra câu trả lời kèm theo trích dẫn
 
     Trả lời chi tiết, chính xác (nếu cần, trích số liệu).
+    
     """)
     ])
 
     llm_chain = create_qa_chain(prompt, llm, db)
-
-    # Chay cai chain
-    # question = "ai là Chủ tịch HĐQT "
     response = llm_chain.invoke({"query": question})
     print(response['result'])
     return response['result']

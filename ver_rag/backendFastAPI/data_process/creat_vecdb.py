@@ -1,6 +1,8 @@
 from langchain_chroma import Chroma
 from langchain_community.embeddings import GPT4AllEmbeddings
 from langchain.chains import RetrievalQA
+import shutil
+import os
 import os
 import json
 from langchain.schema import Document
@@ -28,21 +30,28 @@ def get_text_data(path):
         docs.append(doc)
     return docs
 
-if os.path.exists(persist_dir) and os.listdir(persist_dir):
-    db = Chroma(
-        persist_directory=persist_dir,
-        embedding_function=embedding_model
-    )
-else:
-    from langchain.schema import Document
-    # Khởi tạo db rỗng
+db = None
+
+def add_new_doc(path_json):
+    global db
+
+    # Nếu db đã tồn tại thì đóng/giải phóng nó trước
+    if db is not None:
+        try:
+            # db.persist()    # nếu có
+            db = None       # hoặc gọi hàm đóng nếu thư viện có hỗ trợ
+        except Exception:
+            pass
+    
+    # Xóa thư mục cũ nếu có
+    if os.path.exists(persist_dir):
+        shutil.rmtree(persist_dir)
+    
+    docs = get_text_data(path_json)
+    
+    # Tạo lại db từ đầu với docs mới
     db = Chroma.from_documents(
-        documents=[],  # tạo db rỗng ban đầu
+        documents=docs,
         embedding=embedding_model,
         persist_directory=persist_dir
     )
-
-def add_new_doc(path_json):
-    doc = get_text_data(path_json)
-    db.add_documents(doc)
- 
