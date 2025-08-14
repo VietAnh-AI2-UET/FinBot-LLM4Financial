@@ -56,7 +56,7 @@ function App() {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    const allowedExtensions = ['doc', 'docx'];
+    const allowedExtensions = ['doc', 'docx','pdf','csv'];
     const extension = selected.name.split('.').pop().toLowerCase();
     if (!allowedExtensions.includes(extension)) {
       alert('❌ Chỉ chấp nhận file .doc hoặc .docx');
@@ -113,7 +113,7 @@ function App() {
         />
         <input
           type="file"
-          accept=".doc,.docx"
+          accept=".doc,.docx,.csv,.pdf"
           onChange={handleFileChange}
           style={{ marginLeft: '10px' }}
         />

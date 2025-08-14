@@ -6,7 +6,7 @@ from typing import Optional
 from core.output_generator import respond_user
 import tempfile
 import shutil
-
+import os
 app = FastAPI()
 saved_file_path = None
 # Cho phép frontend truy cập
@@ -27,10 +27,24 @@ async def chat(message: str = Form(...), file: Optional[UploadFile] = File(None)
     print(f"Message: {message}")
     # if message:
     if file:
+        filename = file.filename.lower()
         print(f"Received file: {file.filename}")
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-            shutil.copyfileobj(file.file, tmp)
-            saved_file_path = tmp.name
+        if filename.endswith('.doc') or filename.endswith('.docx'):
+            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(filename)[1]) as tmp:
+                shutil.copyfileobj(file.file, tmp)
+                saved_file_path = tmp.name
+        elif filename.endswith('.pdf'):
+            # Xử lý file PDF riêng biệt, ví dụ lưu tạm và gọi hàm OCR riêng
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                shutil.copyfileobj(file.file, tmp)
+                saved_file_path = tmp.name
+                print("PDF file nhận được, xử lý riêng tại đây")
+        elif filename.endswith('.csv'):
+            # Xử lý file PDF riêng biệt, ví dụ lưu tạm và gọi hàm OCR riêng
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:
+                shutil.copyfileobj(file.file, tmp)
+                saved_file_path = tmp.name
+                print("CSV file nhận được, xử lý riêng tại đây")
             # tmp_path = tmp.name
             # extract_table(tmp_path)
             # res = response_user(message)
