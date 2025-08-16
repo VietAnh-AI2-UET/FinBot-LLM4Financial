@@ -1,8 +1,9 @@
 from core.docx_database_creater import create_database
 from core.csv_database_creater import create_database_for_csv
+from core.md_database_creater import create_database_for_pdf
 from sentence_transformers import SentenceTransformer
-import os
 from core.OCR_server import process_pdf_file
+import os
 
 #read input file
 def get_input_path() -> str:
@@ -23,7 +24,7 @@ def get_database(input_model='all-MiniLM-L6-v2',temp_path=None) -> tuple:
     
     #checking file type
     file_ext = os.path.splitext(input_path)[-1].lower()
-    print(input_path)
+
     #get vector embedding for csv
     if file_ext == '.csv':
         try:
@@ -36,9 +37,12 @@ def get_database(input_model='all-MiniLM-L6-v2',temp_path=None) -> tuple:
             
     elif file_ext == '.pdf':
         try:
-            process_pdf_file(pdf_path=input_path)
+            index, metadatas = create_database_for_pdf(embedding_model=input_model)
+            return index, metadatas
+        
         except Exception as e:
-            print(f"{e}")
+            print('cant get database for markdown file')
+            print(f'error: {e}')
 
     #get vector embedding for docx
     else:
@@ -50,6 +54,7 @@ def get_database(input_model='all-MiniLM-L6-v2',temp_path=None) -> tuple:
             print('cant get database for docx file')
             print(f'error: {e}')
     print("None")
+
 #get user prompt
 def get_user_question() -> str:
     user_question = input('What do you want to know: ')

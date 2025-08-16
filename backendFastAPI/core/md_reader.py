@@ -1,5 +1,3 @@
-# get_md_folder get_list_md_file read_md_file append_content_into_list
-
 import os
 
 def get_inputFolder_path() -> str:
@@ -31,5 +29,3 @@ def get_md_content() -> list[dict]:
     md_files = get_md_list(inputFolder_path=inputFolder_path)
     md_contents = get_markdown_content(inputFolder_path=inputFolder_path, md_files=md_files)
     return md_contents
-
-print(get_md_content())
