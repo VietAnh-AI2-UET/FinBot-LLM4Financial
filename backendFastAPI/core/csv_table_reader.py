@@ -3,7 +3,7 @@ import os
 
 def get_input_path() -> str:
     base_dir = os.getcwd()
-    input_path = os.path.abspath(os.path.join(base_dir, '..', '..', 'VietstockFinance_Bao-cao-tai-chinh_20250731-201232.xlsx'))
+    input_path = os.path.abspath(os.path.join(base_dir, '..', 'VietstockFinance_Bao-cao-tai-chinh_20250731-201232.xlsx'))
     return input_path
 
 def get_dataframe(input_path=None) -> pd.DataFrame:

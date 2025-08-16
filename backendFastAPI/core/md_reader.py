@@ -2,7 +2,7 @@ import os
 
 def get_inputFolder_path() -> str:
     base_dir = os.getcwd()
-    inputFolder_path = os.path.abspath(os.path.join(base_dir, '..', 'preprocessed_md'))
+    inputFolder_path = os.path.abspath(os.path.join(base_dir, 'preprocessed_md'))
     return inputFolder_path
 
 def get_md_list(inputFolder_path: str) -> list[str]:
