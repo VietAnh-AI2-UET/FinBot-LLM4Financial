@@ -1,0 +1,6 @@
+
+
+NGÂN HÀNG THƯƠNG MẠI CỔ PHẦN Á CHÂU
+
+BÁO CÁO TÀI CHÍNH HỢP NHẤT GIỮA NIÊN ĐỘ
+QUÝ II NĂM 2025

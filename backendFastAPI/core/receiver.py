@@ -2,7 +2,7 @@ from core.docx_database_creater import create_database
 from core.csv_database_creater import create_database_for_csv
 from core.md_database_creater import create_database_for_pdf
 from sentence_transformers import SentenceTransformer
-from core.OCR_server import process_pdf_file
+from core.LLama_parse import pdf_to_md
 import os
 
 #read input file
@@ -37,6 +37,7 @@ def get_database(input_model='all-MiniLM-L6-v2',temp_path=None) -> tuple:
             
     elif file_ext == '.pdf':
         try:
+            pdf_to_md(input_path)
             index, metadatas = create_database_for_pdf(embedding_model=input_model)
             return index, metadatas
         
