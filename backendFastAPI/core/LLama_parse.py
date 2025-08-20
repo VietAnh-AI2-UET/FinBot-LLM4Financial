@@ -3,9 +3,9 @@ from llama_index.core import Settings
 from llama_index.llms.gemini import Gemini
 from llama_index.embeddings.gemini import GeminiEmbedding
 from llama_parse import LlamaParse
-
-os.environ["LLAMA_CLOUD_API_KEY"] = ''
-os.environ["GOOGLE_API_KEY"] = ''
+import json
+os.environ["LLAMA_CLOUD_API_KEY"] = 'llx-ZAHEBXsWZE1wjLZNPIsSJozR8T4b5unxnA1sFNhaTU937gnw'
+os.environ["GOOGLE_API_KEY"] = 'AIzaSyCP4IUNUxYmPTY3dtU_nMacWJg_61Patzg'
 Settings.llm = Gemini(model="gemini-2.5-flash")
 Settings.embed_model = GeminiEmbedding()
 
@@ -36,6 +36,21 @@ parser = LlamaParse(
 # file_path = "20250724 - ACB - BCTC hop nhat Quy 02 nam 2025.pdf"
 
 def pdf_to_md(file_path):
+    name_file =  os.path.splitext(os.path.basename(file_path))[0]
+    save_path = f'../database/{name_file}.json'
+    if os.path.exists(save_path):
+        print("file pdf này đã được xử lý.")
+        return None
+    save_data =  {
+            "embedding": 'đã parse',
+            "metadata": "đãcó"
+        }
+    
+    print("đang viết")
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    with open(save_path, "w", encoding="utf-8") as f:
+        json.dump(save_data, f, indent=2, ensure_ascii=False)
+    print("viết xong")
     documents = parser.load_data(file_path)
     output_folder = "preprocessed_md"
     os.makedirs(output_folder, exist_ok=True)
