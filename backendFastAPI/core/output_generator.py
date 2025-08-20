@@ -2,7 +2,7 @@ from core.receiver import find_information
 from huggingface_hub import InferenceClient
 from google import genai
 import os
-GOOGLE_API = "AIzaSyCP4IUNUxYmPTY3dtU_nMacWJg_61Patzg" #https://aistudio.google.com/apikey truy cập để lấy API
+GOOGLE_API = "" #https://aistudio.google.com/apikey truy cập để lấy API
 #get user question and similar information -> create a prompt for LLM
 
 def get_user_prompt_docx(user_question, similar_infos: list[dict]):
