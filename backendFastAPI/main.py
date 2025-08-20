@@ -39,6 +39,18 @@ async def chat(message: str = Form(...), file: Optional[UploadFile] = File(None)
                 shutil.copyfileobj(file.file, tmp)
                 saved_file_path = tmp.name
                 print("PDF file nhận được, xử lý riêng tại đây")
+        elif filename.endswith('.jpg'):
+            # Xử lý file PDF riêng biệt, ví dụ lưu tạm và gọi hàm OCR riêng
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+                shutil.copyfileobj(file.file, tmp)
+                saved_file_path = tmp.name
+                print("file ảnh nhận được, xử lý riêng tại đây")
+        elif filename.endswith('.png'):
+            # Xử lý file PDF riêng biệt, ví dụ lưu tạm và gọi hàm OCR riêng
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+                shutil.copyfileobj(file.file, tmp)
+                saved_file_path = tmp.name
+                print("file ảnh nhận được, xử lý riêng tại đây")
         elif filename.endswith('.csv'):
             # Xử lý file PDF riêng biệt, ví dụ lưu tạm và gọi hàm OCR riêng
             with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp:

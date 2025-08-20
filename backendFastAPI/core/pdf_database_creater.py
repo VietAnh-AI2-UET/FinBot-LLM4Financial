@@ -1,4 +1,4 @@
-from core.md_reader import get_md_content
+from core.pdf_reader import get_md_content
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import faiss

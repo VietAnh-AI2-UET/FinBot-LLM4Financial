@@ -35,15 +35,15 @@ parser = LlamaParse(
 )
 # file_path = "20250724 - ACB - BCTC hop nhat Quy 02 nam 2025.pdf"
 
-def pdf_to_md(file_path):
+def pdf_to_md(file_path,type):
     name_file =  os.path.splitext(os.path.basename(file_path))[0]
     save_path = f'../database/{name_file}.json'
     if os.path.exists(save_path):
         print("file pdf này đã được xử lý.")
         return None
     save_data =  {
-            "embedding": 'đã parse',
-            "metadata": "đãcó"
+            "isSave": 'đã parse',
+            "type": f"{type}"
         }
     
     print("đang viết")

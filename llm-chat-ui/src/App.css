@@ -4,28 +4,50 @@
   padding: 1rem;
   background: linear-gradient(to bottom, #f7f9fc, #e3f2fd);
   height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 h1 {
   margin-bottom: 1rem;
   color: #1976d2;
 }
+.loading-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  /* border: 2px solid #4CAF50; màu viền */
+  border-top: 2px solid transparent; /* để tạo hiệu ứng quay */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 6px;
+  vertical-align: middle;
+}
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .chat-box {
+  flex: 1;
   width: 100%;
-  max-width: 600px;
-  height: 600px;
+  max-width: 700px;
+  max-height: 1000px;
+  height: 1000px; /* ✅ tăng chiều cao */
   margin: 0 auto;
   padding: 1rem;
   border-radius: 16px;
   box-shadow: 0 0 12px rgba(25, 118, 210, 0.3);
-  background: white;
+  background: #fff;
   overflow-y: auto;
   transition: all 0.3s ease;
   position: relative;
   animation: shimmer 8s infinite;
-}
 
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+}
 .msg {
   margin-bottom: 10px;
   text-align: left;

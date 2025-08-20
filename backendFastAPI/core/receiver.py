@@ -1,6 +1,6 @@
 from core.docx_database_creater import create_database
 from core.csv_database_creater import create_database_for_csv
-from core.md_database_creater import create_database_for_pdf
+from core.pdf_database_creater import create_database_for_pdf
 from sentence_transformers import SentenceTransformer
 from core.LLama_parse import pdf_to_md
 import os
@@ -35,9 +35,9 @@ def get_database(input_model='all-MiniLM-L6-v2',temp_path=None) -> tuple:
             print('cant get database for csv file')
             print(f'error: {e}')
             
-    elif file_ext == '.pdf':
+    elif file_ext == '.pdf' or file_ext == ".png" or file_ext == ".jpg":
         try:
-            pdf_to_md(input_path)
+            pdf_to_md(input_path,file_ext)
             index, metadatas = create_database_for_pdf(embedding_model=input_model)
             return index, metadatas
         

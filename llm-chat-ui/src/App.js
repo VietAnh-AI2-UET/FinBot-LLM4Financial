@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Loader2 } from "lucide-react";
 
 function App() {
   const [messages, setMessages] = useState([
@@ -9,8 +11,17 @@ function App() {
   ]);
   const [input, setInput] = useState('');
   const [file, setFile] = useState(null);
-  const [loading, setLoading] = useState(false); // trạng thái đang xử lý
+  const [loading, setLoading] = useState(false);
   const [botTypingText, setBotTypingText] = useState('');
+
+  const chatBoxRef = useRef(null); // ✅ ref cho chat box
+
+  // ✅ Mỗi khi messages hoặc botTypingText thay đổi → scroll xuống cuối
+  useEffect(() => {
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+    }
+  }, [messages, botTypingText]);
 
   const handleSend = async () => {
     if (input.trim() === '' && !file) return;
@@ -21,7 +32,7 @@ function App() {
     }
 
     setMessages(newMessages);
-    setLoading(true); // ✅ Bắt đầu loading
+    setLoading(true);
 
     const formData = new FormData();
     formData.append("message", input);
@@ -42,13 +53,13 @@ function App() {
       const data = res.data;
       simulateTyping(data.response, () => {
         setMessages(prev => [...prev, { role: 'bot', text: data.response }]);
-        setBotTypingText(''); // xóa sau khi đã thêm vào messages
+        setBotTypingText('');
       });
     } catch (error) {
       setMessages(prev => [...prev, { role: 'bot', text: '❌ Lỗi kết nối server' }]);
       console.error('Error:', error);
     } finally {
-      setLoading(false); // ✅ Kết thúc loading
+      setLoading(false);
     }
   };
 
@@ -56,10 +67,10 @@ function App() {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    const allowedExtensions = ['doc', 'docx','pdf','csv'];
+    const allowedExtensions = ['doc', 'docx','pdf','csv','jpg','png'];
     const extension = selected.name.split('.').pop().toLowerCase();
     if (!allowedExtensions.includes(extension)) {
-      alert('❌ Chỉ chấp nhận file .doc hoặc .docx');
+      alert('❌ Chỉ chấp nhận file .doc, .docx, .pdf hoặc .csv, .png, .jpg');
       return;
     }
 
@@ -67,41 +78,43 @@ function App() {
   };
 
   const simulateTyping = (fullText, callback) => {
-  let index = 0;
-  setBotTypingText('');
-  const interval = setInterval(() => {
-    if (index < fullText.length) {
-      setBotTypingText(prev => prev + fullText[index]);
-      index++;
-    } else {
-      clearInterval(interval);
-      callback();
-    }
-  }, 10); // 30ms mỗi ký tự
-};
-
+    let index = 0;
+    setBotTypingText('');
+    const interval = setInterval(() => {
+      if (index < fullText.length) {
+        setBotTypingText(prev => prev + fullText[index]);
+        index++;
+      } else {
+        clearInterval(interval);
+        callback();
+      }
+    }, 5); // 30ms mỗi ký tự
+  };
 
   return (
     <div className="app">
       <h1>🧠 LLM Chatbot</h1>
-      <div className="chat-box">
+      <div className="chat-box" ref={chatBoxRef}>
         {messages.map((msg, idx) => (
-        <div key={idx} className={`msg ${msg.role}`}>
-          <strong>{msg.role === 'user' ? 'Bạn' : 'Bot'}:</strong>
-          <ReactMarkdown>{msg.text}</ReactMarkdown>
-        </div>
-      ))}
-      {botTypingText && (
-        <div className="msg bot">
-          <strong>Bot:</strong> <ReactMarkdown>{botTypingText}</ReactMarkdown>
-        </div>
-      )}
-
-        {loading && (
+          <div key={idx} className={`msg ${msg.role}`}>
+            <strong>{msg.role === 'user' ? 'Bạn' : 'Bot'}:</strong>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+          </div>
+        ))}
+        {botTypingText && (
           <div className="msg bot">
-            <strong>Bot:</strong> ⏳ Đang xử lý, vui lòng chờ...
+            <strong>Bot:</strong> <ReactMarkdown>{botTypingText}</ReactMarkdown>
           </div>
         )}
+        {loading && (
+      <div className="msg bot">
+        <div className="flex items-center gap-2 bg-green-50 p-3 rounded-xl shadow-sm">
+          <strong className="text-green-700">Bot:</strong>
+          <Loader2 className="loading-icon" />
+          <span>Đang xử lý, vui lòng chờ...</span>
+        </div>
+      </div>
+    )}
       </div>
       <div className="input-area">
         <input
@@ -113,7 +126,7 @@ function App() {
         />
         <input
           type="file"
-          accept=".doc,.docx,.csv,.pdf"
+          accept=".doc,.docx,.csv,.pdf,.png,.jpg"
           onChange={handleFileChange}
           style={{ marginLeft: '10px' }}
         />
